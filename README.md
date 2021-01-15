@@ -1,2 +1,25 @@
 # learning-node
-Created with CodeSandbox
+
+### 模块系统及其查找，加载策略
+
+![](https://www.runoob.com/wp-content/uploads/2014/03/nodejs-require.jpg)
+
+> NODE_PATH: Node 允许通过 NODE_PATH 环境变量来指定额外的模块搜索路径
+> NODE_PATH 环境变量中可以包含一个或多个目录路径, 路径之间在 Linux 下使用`:`分隔，在 window 下使用`;`分隔
+
+```js
+// 假设NODE_PATH=/home/user/lib:/home/lib
+const bar = require("foo/bar");
+
+/**
+ *  模块查找路径
+ *  1. /home/user/node_modules/foo/bar
+ *  2. /home/node_modules/foo/bar
+ *  ... 各层级的node_modules
+ *
+ *  // NODE_PATH指定的，额外的搜索路径
+ *  3. /home/user/lib/foo/bar
+ *  4. /home/lib/foo/bar
+ * /
+
+```
