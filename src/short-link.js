@@ -1,5 +1,4 @@
 const http = require("http");
-const querystring = require("querystring");
 
 /**
  * 短连接生成： ID自增 => 10进制转62([0-9, A-Z, a-z])进制 => 短码
@@ -14,10 +13,14 @@ let autoIncrId = 10000;
 // 全局字典对象，模拟redis来存储短路径 -> 长路径的映射关系
 const shortLongMap = {};
 
-function string10to62(number) {
+/**
+ * @description 十进制转62进制
+ * @param {number} index 
+ */
+function string10to62(index) {
   const charsArr = CHARS.split("");
   const radix = CHARS.length;
-  let qutient = +number;
+  let qutient = +index;
   let encodeStr = "";
   do {
     // 除数*商+余数 = 被除数
@@ -29,23 +32,42 @@ function string10to62(number) {
   return encodeStr;
 }
 
+/**
+ * @description 62进制转10进制：找出字符在62进制字符中的索引，然后乘以62的N次方。次方从右到左，依次从0开始递增加一 
+ * @param {string[]} chars 
+ */
+function string62to10(chars) {
+  const charsArr = chars.split("").reverse();
+  let pow = (total = 0);
+
+  for (const char of charsArr) {
+    total += CHARS.indexOf(char) * 62 ** pow;
+    pow++
+  }
+
+  return total;  
+}
+
 http
   .createServer((req, res) => {
     if (req.method.toLowerCase() === "get") {
-      // 如果是短路径，则重定向
-      console.log(req.url)
+      // 如果是短路径，则302重定向
       if (req.url in shortLongMap) {
         res.writeHead(302, {
           Location: shortLongMap[req.url],
         });
         res.end();
       } else if (Object.values(shortLongMap).includes(req.url)) {
-        const shortLink = Object.entries(shortLongMap).filter(([key, value]) => value === req.url)[0][0]
-        res.write(`Yes, This is a long Link and its short Link is ${shortLink}`);
+        const shortLink = Object.entries(shortLongMap).filter(
+          ([key, value]) => value === req.url
+        )[0][0];
+        res.write(
+          `Yes, This is a long Link and its short Link is ${shortLink}`
+        );
         res.end();
       } else {
-        res.write('This url is neight long link nor short link.')
-        res.end()
+        res.write("This url is neight long link nor short link.");
+        res.end();
       }
     }
 
@@ -70,7 +92,7 @@ http
           responseMsg += matchedKey;
         } else {
           const shortLink = string10to62(autoIncrId++);
-          shortLongMap[`/${shortLink}`] = `/${longLink}`;
+          shortLongMap[`/${shortLink}`] = `${longLink}`;
           responseMsg += " " + shortLink;
           console.log(
             `Registry a longLink: ${longLink} and its short link is: ${shortLink}`

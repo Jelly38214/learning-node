@@ -1,25 +1,38 @@
-# learning-node
+## 短路径
 
-### 模块系统及其查找，加载策略
 
-![](https://www.runoob.com/wp-content/uploads/2014/03/nodejs-require.jpg)
+Q0: 场景
+A0: 微博推文，短信推广
 
-> NODE_PATH: Node 允许通过 NODE_PATH 环境变量来指定额外的模块搜索路径
-> NODE_PATH 环境变量中可以包含一个或多个目录路径, 路径之间在 Linux 下使用`:`分隔，在 window 下使用`;`分隔
+Q1: 怎么计算短路径
+A1: 发号器（ID 自增） + 62 进制编码
 
-```js
-// 假设NODE_PATH=/home/user/lib:/home/lib
-const bar = require("foo/bar");
+Q2: 分布式发号器
+A2:
+_ UUID： 产生的内容过长，没意义
+_ 多台 MySQL 服务器：它有一个自增 ID。假设 8 台，第一台 MySQL 初始值为 1，每次自增 8；第二台初始值为 2，每次自增 8，依次类推。缺点：ID 是连续，容易被爬虫顺着 ID 抓数据 \* 雪花算法分布式生成唯一 ID
 
-/**
- *  模块查找路径
- *  1. /home/user/node_modules/foo/bar
- *  2. /home/node_modules/foo/bar
- *  ... 各层级的node_modules
- *
- *  // NODE_PATH指定的，额外的搜索路径
- *  3. /home/user/lib/foo/bar
- *  4. /home/lib/foo/bar
- * /
+Q3: 自定义短路径
 
-```
+Q4: 一个长链接对于一个还是多少短链接
+A4:  一个长链接，在不同的地点，不同的用户等情况下，生成的短链接应该不一样。这样才能更好的进行数据分析。
+
+Q5: 如何存储长/短链接
+A5: KV形式存储，以短链接为 primary key， 长网址为 value，用 MySQL/redis 进行存储
+
+Q6: 301/302的区别
+A6: 第一次301后，浏览器会进行缓存，下次再访问短链接时，不会再去请求短链接服务器而是直接从浏览器本地的缓存拿到长链接。好处是减少短链接服务器的压力，缺点是不能统计短链接的点击次数。
+302请求表示临时重定向，浏览器不会主动去缓存它，每次点击都会去请求服务器。方便统计点击次数
+
+Q7: 预防攻击防止耗光ID
+A7: 限制IP的单日请求总数+缓存redis服务器(长链接->ID)，仅存一天数据，用LRU机制。当发大量同一个网址过来，直接从缓存服务器里返回短网址
+
+Q8: 为什么是62进制而不是64进制
+A8: 62进制转换是因为62进制转换后只含数字+小写+大写字母。而64进制转换会含有/,+这样的符号（不符合正常URL的字符）
+
+Reference：
+
+- [知乎话题](https://www.zhihu.com/question/20103344/answer/573638467)
+- [设计短链接系统](http://cn.soulmachine.me/2017-04-10-how-to-design-tinyurl/)
+- [base62与短链接](https://www.jianshu.com/p/3156cc5d6ae3)
+- [base62工具](https://tool.lu/hexconvert/)
