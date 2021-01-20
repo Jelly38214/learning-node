@@ -1,72 +1,32 @@
 const http = require("http");
+const Redis = require("ioredis");
+const redisUrl = process.env.REDIS_URL || 6333
+const redisClient = new Redis(redisUrl);
+const Port = process.env.PORT || 8888
+
+const {string10to62} = require('./utilis')
 
 /**
  * 短连接生成： ID自增 => 10进制转62([0-9, A-Z, a-z])进制 => 短码
  */
 
-// 生产环境需将字符打乱防止被预测
-const CHARS = "0123456789abcdefghigklmnopqrstuvwxyzABCDEFGHIGKLMNOPQRSTUVWXYZ";
-
 // 全局自增长ID，每来一个长url，将其与一个自增id绑定，然后利用base62将该自增id转成字符串， 完成转换
 let autoIncrId = 10000;
-
-// 全局字典对象，模拟redis来存储短路径 -> 长路径的映射关系
-const shortLongMap = {};
-
-/**
- * @description 十进制转62进制
- * @param {number} index 
- */
-function string10to62(index) {
-  const charsArr = CHARS.split("");
-  const radix = CHARS.length;
-  let qutient = +index;
-  let encodeStr = "";
-  do {
-    // 除数*商+余数 = 被除数
-    let mod = qutient % radix;
-    qutient = (qutient - mod) / radix;
-    encodeStr = charsArr[mod] + encodeStr;
-  } while (qutient);
-
-  return encodeStr;
-}
-
-/**
- * @description 62进制转10进制：找出字符在62进制字符中的索引，然后乘以62的N次方。次方从右到左，依次从0开始递增加一 
- * @param {string[]} chars 
- */
-function string62to10(chars) {
-  const charsArr = chars.split("").reverse();
-  let pow = (total = 0);
-
-  for (const char of charsArr) {
-    total += CHARS.indexOf(char) * 62 ** pow;
-    pow++
-  }
-
-  return total;  
-}
+const LMAP = 'l2s'
+const SMAP = 's2l'
 
 http
-  .createServer((req, res) => {
+  .createServer(async(req, res) => {
     if (req.method.toLowerCase() === "get") {
       // 如果是短路径，则302重定向
-      if (req.url in shortLongMap) {
+      const longLink = await redisClient.hget(SMAP, req.url)
+      if (longLink) {
         res.writeHead(302, {
-          Location: shortLongMap[req.url],
+          Location: longLink,
         });
         res.end();
-      } else if (Object.values(shortLongMap).includes(req.url)) {
-        const shortLink = Object.entries(shortLongMap).filter(
-          ([key, value]) => value === req.url
-        )[0][0];
-        res.write(
-          `Yes, This is a long Link and its short Link is ${shortLink}`
-        );
-        res.end();
       } else {
-        res.write("This url is neight long link nor short link.");
+        res.write("This url is not a short link, registry it pls.");
         res.end();
       }
     }
@@ -77,23 +37,22 @@ http
         bodystring += chunk;
       });
 
-      req.on("end", () => {
+      req.on("end", async() => {
         const bodyjson = JSON.parse(bodystring);
-        let responseMsg = "Registry Successfully, the short link is";
+        let responseMsg = '';
 
         const longLink = bodyjson["lonkLink"];
 
         // 判断该长链接是否已经转化过
-        const matchedKey = Object.entries(shortLongMap)
-          .filter(([key, value]) => value === longLink)
-          .reduce((prev, next) => prev + next[0], "");
+        const shortLink = await redisClient.hget(LMAP, longLink)
 
-        if (matchedKey) {
-          responseMsg += matchedKey;
+        if (shortLink) {
+          responseMsg += `This long link has its short link: ${shortLink}`;
         } else {
           const shortLink = string10to62(autoIncrId++);
-          shortLongMap[`/${shortLink}`] = `${longLink}`;
-          responseMsg += " " + shortLink;
+          await redisClient.hset(SMAP,`/${shortLink}`, longLink )
+          await redisClient.hset(LMAP, longLink, `/${shortLink}`)
+          responseMsg += `Registry Successfully, the short link is ${shortLink}`;
           console.log(
             `Registry a longLink: ${longLink} and its short link is: ${shortLink}`
           );
@@ -102,6 +61,6 @@ http
       });
     }
   })
-  .listen(8080, () => {
-    console.log("Short Link Server is listening at 8080 port.");
+  .listen(Port, async() => {
+    console.log(`Short Link Server is listening at ${Port} port.`);
   });

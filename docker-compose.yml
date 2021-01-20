@@ -1,13 +1,27 @@
-version: '3.3'
+version: "3.3"
+# https://yeasy.gitbook.io/docker_practice/compose/compose_file
 
 services:
   redis:
     image: redis
+    container_name: cache
+    expose:
+      - 6379
+    ports:
+      - "6333:6379"
   app:
     depends_on: 
       - redis
-    image: shortlink
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: shortlink-server
     ports: 
       - "8080:8080" 
+    links:
+      - redis
+    environment:
+      - PORT=8080
+      - REDIS_URL=redis://cache
 volumes: 
   logvolume: {}

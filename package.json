@@ -6,7 +6,9 @@
   "scripts": {
     "start": "nodemon src/index.js localhost 8080"
   },
-  "dependencies": {},
+  "dependencies": {
+    "ioredis": "^4.19.4"
+  },
   "devDependencies": {
     "nodemon": "1.18.4"
   },

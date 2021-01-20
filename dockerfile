@@ -1,4 +1,5 @@
 FROM node:14
-COPY . .
+WORKDIR /app
+COPY . /app
 EXPOSE 8080
-CMD [ "node", "./src/short-link.js" ]
+CMD node ./src/short-link.js
