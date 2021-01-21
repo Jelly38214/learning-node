@@ -1,6 +1,6 @@
 # learning-node
 
-### 模块系统及其查找，加载策略
+## 模块系统及其查找，加载策略
 
 ![](https://www.runoob.com/wp-content/uploads/2014/03/nodejs-require.jpg)
 
@@ -23,3 +23,20 @@ const bar = require("foo/bar");
  * /
 
 ```
+
+## Http 模块
+
+主要的三个类：http.ClientRequest, http.Server, http.ServerResponse
+
+### request 对象
+
+`request instance` <- `http.ClientRequest` <- `Stream`
+
+### response 对象
+
+`response instance` <- `http.ServerResponse` <- `Stream`
+
+| 属性或方法         | 解释                                                       |
+| ------------------ | ---------------------------------------------------------- |
+| statusCode = 200   | 设置状态码为 200                                           |
+| end/end("success") | 结束本次请求, 当传内容时，类似 res.write(内容) + res.end() |
