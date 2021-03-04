@@ -1,36 +1,34 @@
 const http = require("http");
 const querystring = require("querystring");
+const handleBlogRouter = require("./src/router/blog");
+const handleUserRouter = require("./src/router/user");
 
 const server = http.createServer((req, res) => {
-  const method = req.method;
-  const url = req.url;
-  const path = url.split("?")[0];
-  const query = querystring.parse(url.split("?")[1]);
-
+  // Set default returned data format: JSON
   res.setHeader("Content-type", "application/json");
-  const resData = {
-    method,
-    url,
-    path,
-    query,
-  };
 
-  if (method === "GET") {
-    res.end(JSON.stringify(resData));
+  // Get path
+  const url = req.url;
+  req.path = url.split("?")[0];
+
+  // Resolve query
+  req.query = querystring.parse(url.split("?")[1]);
+
+  const blogData = handleBlogRouter(req, res);
+
+  if (blogData) {
+    return res.end(JSON.stringify(blogData));
   }
 
-  if (method === "POST") {
-    // Get Post Data
-    let postData = "";
-    req.on("data", (chunk) => {
-      postData += chunk.toString();
-    });
-
-    req.on("end", () => {
-      resData.postData = postData;
-      res.end(JSON.stringify(resData));
-    });
+  const userData = handleUserRouter(req, res);
+  if (userData) {
+    return res.end(JSON.stringify(userData));
   }
+
+  // 404
+  res.writeHead(404, { "Content-type": "text/plain" });
+  res.write("404 Not Found");
+  res.end();
 });
 
 server.listen(8000);
