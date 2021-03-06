@@ -7,13 +7,11 @@ const handleUserRouter = (req, res) => {
   // Login
   if (method === "POST" && req.path === "/api/user/login") {
     const { username, password } = req.body;
-    const isOk = login(username, password);
-
-    if (!isOk) {
-      return new ErrorModel("Login fail");
-    }
-
-    return new SuccessModel();
+    return login(username, password).then((data) => {
+      return data.username
+        ? new SuccessModel()
+        : new ErrorModel("Login in unsuccessfully.");
+    });
   }
 };
 

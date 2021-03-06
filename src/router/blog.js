@@ -19,35 +19,37 @@ const handleBlogRouter = (req, res) => {
 
   // 获取博客详情
   if (method === "GET" && req.path === "/api/blog/detail") {
-    return new SuccessModel(getDetail(req.query.id));
+    return getDetail(req.query.id).then((blogData) => {
+      return new SuccessModel(blogData);
+    });
   }
 
   // 新增博客
   if (method === "POST" && req.path === "/api/blog/new") {
     const blogData = req.body;
 
-    return new SuccessModel(newBlog(blogData));
+    blogData["author"] = "zhangsan"; // For non-login-in phase.
+    return newBlog(blogData).then((data) => {
+      return new SuccessModel(data);
+    });
   }
 
   // 更新博客
   if (method === "POST" && req.path === "/api/blog/update") {
-    const isOk = updateBlog(req.query.id, req.body);
-    if (!isOk) {
-      return new ErrorModel("Update Blog faied.");
-    }
-
-    return new SuccessModel();
+    return updateBlog(req.query.id, req.body).then((isUpdate) => {
+      return isUpdate
+        ? new SuccessModel()
+        : new ErrorModel("Update Blog unsuccessfully.");
+    });
   }
 
   // 删除博客
   if (method === "POST" && req.path === "/api/blog/del") {
-    const isOk = delBlog(req.query.id);
-
-    if (!isOk) {
-      return new ErrorModel("Update Blog faied.");
-    }
-
-    return new SuccessModel();
+    delBlog(req.query.id, "zhangsan").then((isDel) => {
+      return isDel
+        ? new SuccessModel()
+        : new ErrorModel("Update Blog unsuccessfully.");
+    });
   }
 };
 
