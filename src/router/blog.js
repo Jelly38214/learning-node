@@ -12,8 +12,9 @@ const handleBlogRouter = (req, res) => {
 
   // 获取博客列表
   if (method === "GET" && req.path === "/api/blog/list") {
-    const blogdata = getList(req.query.author, req.query.keyword);
-    return new SuccessModel(blogdata);
+    return getList(req.query.author, req.query.keyword).then((listData) => {
+      return new SuccessModel(listData);
+    });
   }
 
   // 获取博客详情
@@ -41,7 +42,7 @@ const handleBlogRouter = (req, res) => {
   // 删除博客
   if (method === "POST" && req.path === "/api/blog/del") {
     const isOk = delBlog(req.query.id);
-    
+
     if (!isOk) {
       return new ErrorModel("Update Blog faied.");
     }

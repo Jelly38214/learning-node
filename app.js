@@ -2,6 +2,7 @@ const http = require("http");
 const querystring = require("querystring");
 const handleBlogRouter = require("./src/router/blog");
 const handleUserRouter = require("./src/router/user");
+const blog = require("./src/controller/blog");
 
 const getPostData = (req) => {
   return new Promise((resolve, reject) => {
@@ -45,10 +46,12 @@ const server = http.createServer((req, res) => {
   getPostData(req).then((postData) => {
     req.body = postData;
 
-    const blogData = handleBlogRouter(req, res);
-
-    if (blogData) {
-      return res.end(JSON.stringify(blogData));
+    const blogResult = handleBlogRouter(req, res);
+    if (blogResult) {
+      blogResult.then((blogData) => {
+        res.end(JSON.stringify(blogData));
+      });
+      return;
     }
 
     const userData = handleUserRouter(req, res);
