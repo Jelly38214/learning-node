@@ -2,35 +2,8 @@ const http = require("http");
 const querystring = require("querystring");
 const handleBlogRouter = require("./src/router/blog");
 const handleUserRouter = require("./src/router/user");
-const blog = require("./src/controller/blog");
-const { rename } = require("fs");
-
-const getPostData = (req) => {
-  return new Promise((resolve, reject) => {
-    if (req.method !== "POST") {
-      resolve({});
-      return;
-    }
-
-    if (req.headers["content-type"] !== "application/json") {
-      resolve({});
-      return;
-    }
-
-    let postData = "";
-    req.on("data", (chunk) => {
-      postData += chunk.toString();
-    });
-
-    req.on("end", () => {
-      if (!postData) {
-        resolve({});
-      } else {
-        resolve(JSON.parse(postData));
-      }
-    });
-  });
-};
+const { getCookieExpires, getPostData } = require("./src/utils");
+const { redisGet, redisSet } = require("./src/db/redis");
 
 const server = http.createServer((req, res) => {
   // Set default returned data format: JSON
@@ -43,12 +16,40 @@ const server = http.createServer((req, res) => {
   // Resolve query
   req.query = querystring.parse(url.split("?")[1]);
 
+  // Resolve Cookie
+  req.cookie = querystring.parse(req.headers.cookie, "; ");
+
+  // Resolve Session
+  let needSetCookie = false;
+  let userId = req.cookie.userid;
+  if (userId) {
+    redisGet(userId).then((value) => {
+      if (!value) {
+        req.session = {};
+        redisSet(userId, {});
+      } else {
+        req.session = value;
+      }
+    });
+  } else {
+    needSetCookie = true;
+    userId = `${Date.now()}_${Math.random()}`;
+    redisSet(userId, {});
+    req.session = {};
+  }
+
   // Get post data
   getPostData(req).then((postData) => {
     req.body = postData;
 
     const blogResult = handleBlogRouter(req, res);
     if (blogResult) {
+      if (needSetCookie) {
+        res.setHeader(
+          "Set-Cookie",
+          `username=${userId}; path=/; httpOnly; expires=${getCookieExpires}`
+        );
+      }
       blogResult.then((blogData) => {
         res.end(JSON.stringify(blogData));
       });
@@ -57,6 +58,12 @@ const server = http.createServer((req, res) => {
 
     const userResult = handleUserRouter(req, res);
     if (userResult) {
+      if (needSetCookie) {
+        res.setHeader(
+          "Set-Cookie",
+          `username=${userId}; path=/; httpOnly; expires=${getCookieExpires}`
+        );
+      }
       userResult.then((userData) => {
         res.end(JSON.stringify(userData));
       });

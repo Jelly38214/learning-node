@@ -25,3 +25,8 @@
 | content    | longtext    |         | Y         |           |         |
 | createtime | bigint(20)  |         | Y         |           | 0       |
 | author     | varchat(20) |         | Y         |           |         |
+
+### 登录（业界方案）
+
+- 登录校验&登录信息存储
+    - cookie中存储userid，server端对应username
