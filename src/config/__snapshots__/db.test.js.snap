@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Config For MYSQL & REDIS MYSQL defaults 1`] = `
+Object {
+  "database": "myblog",
+  "host": "localhost",
+  "password": "c11090201",
+  "port": "3306",
+  "user": "root",
+}
+`;
+
+exports[`Config For MYSQL & REDIS REDIS defaults 1`] = `
+Object {
+  "host": "127.0.0.1",
+  "port": 6379,
+}
+`;
