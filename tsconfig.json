@@ -1,0 +1,15 @@
+{
+  "extends": "@tsconfig/node16/tsconfig.json",
+  "compilerOptions": {
+    "importHelpers": true,
+    "target": "ESNext",
+    "moduleResolution": "Node",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "strict": true
+  },
+  "ts-node": {
+    "transpileOnly": false,
+    "transpiler": "ts-node/transpilers/swc-experimental"
+  }
+}
