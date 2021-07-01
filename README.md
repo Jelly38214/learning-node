@@ -40,3 +40,8 @@ const bar = require("foo/bar");
 | ------------------ | ---------------------------------------------------------- |
 | statusCode = 200   | 设置状态码为 200                                           |
 | end/end("success") | 结束本次请求, 当传内容时，类似 res.write(内容) + res.end() |
+
+
+
+# Reference
+  * http://nodejs.cn/learn/how-to-use-the-nodejs-repl
