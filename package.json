@@ -7,7 +7,7 @@
     "start": "cross-env NODE_ENV=development nodemon app.js localhost 8080",
     "test": "jest",
     "prepare": "husky install",
-    "tutorial-start": "ts-node-dev ./tutorial/eventLoop.ts",
+    "tutorial-start": "ts-node-dev ./tutorial/event/emitter.ts",
     "tutorial-build": "tsc -p ./tutorial"
   },
   "dependencies": {

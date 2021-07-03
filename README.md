@@ -45,3 +45,4 @@ const bar = require("foo/bar");
 
 # Reference
   * http://nodejs.cn/learn/how-to-use-the-nodejs-repl
+  * https://github.com/chyingp/nodejs-learning-guide
