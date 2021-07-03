@@ -1,0 +1,1 @@
+console.log('b module:',JSON.stringify(module, null, 2))
