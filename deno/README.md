@@ -5,3 +5,7 @@
 设计上,通过于浏览器API保持一致,来减少认知负担.如果服务端和浏览器存在相同概念,deno就不会创造新的概念
 
 支持TS,异步操作全部返回Promise,使用ArrayBuffer处理二进制,没有node_modules
+
+References:
+- [Setup environment](https://deno.land/manual@v1.13.0/getting_started/setup_your_environment#environment-variables)
+- [Grant permissions](https://deno.land/manual@v1.13.0/getting_started/permissions)
