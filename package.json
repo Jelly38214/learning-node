@@ -29,10 +29,5 @@
     "tslib": "^2.3.0",
     "typescript": "^4.3.4"
   },
-  "keywords": [],
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm test"
-    }
-  }
+  "keywords": []
 }
